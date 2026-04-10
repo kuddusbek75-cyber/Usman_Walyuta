@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Усман Валюта — Обмен Валют</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Mulish:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold:#C9A84C;--gold-light:#E8C97A;--gold-dim:#8a6f2e;
+    --navy:#0A1628;--navy-mid:#112240;--navy-light:#1a3460;
+    --cream:#F7F2E8;--text-light:#e8dfc8;--text-muted:#8a99b4;
+    --green:#2ecc71;--red:#e74c3c;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Mulish',sans-serif;background:var(--navy);color:var(--text-light);min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;
+    background:radial-gradient(ellipse 80% 60% at 20% 10%,rgba(201,168,76,.07) 0%,transparent 60%),
+               radial-gradient(ellipse 60% 80% at 85% 80%,rgba(201,168,76,.05) 0%,transparent 55%);
+    pointer-events:none;z-index:0;}
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
+    padding:14px 5vw;background:rgba(10,22,40,.95);backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(201,168,76,.18);}
+  .logo{display:flex;align-items:center;gap:10px;}
+  .logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--gold),var(--gold-dim));
+    border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;
+    box-shadow:0 4px 18px rgba(201,168,76,.35);flex-shrink:0;}
+  .logo-text{font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--gold-light);}
+  .logo-sub{font-size:.58rem;letter-spacing:3px;text-transform:uppercase;color:var(--text-muted);}
+  .nav-time{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--text-muted);}
+  .dot-live{width:7px;height:7px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;flex-shrink:0;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+  .nav-right-text{display:none;}
+  @media(min-width:480px){.nav-right-text{display:inline;}}
+  .hero{position:relative;z-index:1;text-align:center;padding:44px 5vw 36px;animation:fadeUp .8s ease both;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:5px 14px;border-radius:50px;
+    border:1px solid rgba(201,168,76,.35);font-size:.68rem;letter-spacing:2px;text-transform:uppercase;
+    color:var(--gold);margin-bottom:20px;}
+  .hero h1{font-family:'Playfair Display',serif;font-size:clamp(1.9rem,6vw,3.8rem);font-weight:700;
+    line-height:1.1;background:linear-gradient(135deg,#fff 0%,var(--gold-light) 60%,var(--gold) 100%);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px;}
+  .hero p{font-size:.9rem;color:var(--text-muted);max-width:480px;margin:0 auto 28px;line-height:1.7;}
+  .hero-stats{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;}
+  .stat{text-align:center;}
+  .stat-num{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--gold-light);font-weight:700;}
+  .stat-label{font-size:.66rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-top:3px;}
+  .page-tabs{position:relative;z-index:1;display:flex;gap:0;padding:0 5vw;
+    border-bottom:1px solid rgba(201,168,76,.15);overflow-x:auto;scrollbar-width:none;}
+  .page-tabs::-webkit-scrollbar{display:none;}
+  .page-tab{padding:13px 20px;font-size:.82rem;font-weight:600;color:var(--text-muted);
+    border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;
+    transition:color .2s,border-color .2s;background:none;border-left:none;border-right:none;border-top:none;
+    font-family:'Mulish',sans-serif;}
+  .page-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+  .page{display:none;position:relative;z-index:1;}
+  .page.active{display:block;}
+  .section{padding:28px 5vw 50px;}
+  .section-title{font-family:'Playfair Display',serif;font-size:1.45rem;color:var(--gold-light);margin-bottom:6px;}
+  .section-line{width:44px;height:3px;background:linear-gradient(90deg,var(--gold),transparent);border-radius:2px;margin-bottom:24px;}
+  .rates-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+  .update-info{font-size:.72rem;color:var(--text-muted);display:flex;align-items:center;gap:5px;}
+  .spinner{width:12px;height:12px;border:2px solid rgba(201,168,76,.2);border-top-color:var(--gold);
+    border-radius:50%;animation:spin 1s linear infinite;display:none;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .spinner.active{display:block;}
+  .base-selector{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px;}
+  .base-btn{padding:6px 13px;border-radius:50px;cursor:pointer;font-size:.75rem;
+    border:1px solid rgba(201,168,76,.25);background:transparent;color:var(--text-muted);
+    transition:all .2s;font-family:'Mulish',sans-serif;}
+  .base-btn.active{background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:700;}
+
+  /* MOBILE: compact list */
+  .rates-list{display:flex;flex-direction:column;gap:0;
+    background:rgba(17,34,64,.8);border:1px solid rgba(201,168,76,.14);border-radius:16px;overflow:hidden;}
+  .rate-row{display:flex;align-items:center;padding:14px 18px;gap:12px;
+    border-bottom:1px solid rgba(255,255,255,.05);transition:background .2s;}
+  .rate-row:last-child{border-bottom:none;}
+  .rate-row:hover{background:rgba(201,168,76,.06);}
+  .rate-flag-sm{font-size:1.5rem;flex-shrink:0;width:32px;text-align:center;}
+  .rate-info{flex:1;min-width:0;}
+  .rate-code{font-size:.85rem;font-weight:700;color:var(--text-light);}
+  .rate-name-sm{font-size:.72rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rate-right{text-align:right;flex-shrink:0;}
+  .rate-val{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;color:var(--gold-light);}
+  .rate-pair-sm{font-size:.65rem;color:var(--text-muted);margin-top:2px;}
+  .rate-change-sm{font-size:.7rem;font-weight:600;}
+  .change-up{color:var(--green);}.change-down{color:var(--red);}
+
+  /* DESKTOP: grid cards */
+  @media(min-width:700px){
+    .rates-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;
+      background:transparent;border:none;border-radius:0;overflow:visible;}
+    .rate-row{flex-direction:column;align-items:flex-start;padding:22px 20px;
+      background:rgba(17,34,64,.8);border:1px solid rgba(201,168,76,.14);border-radius:16px;
+      gap:6px;position:relative;overflow:hidden;transition:transform .25s,border-color .25s,box-shadow .25s;}
+    .rate-row:hover{transform:translateY(-4px);border-color:rgba(201,168,76,.45);box-shadow:0 12px 40px rgba(0,0,0,.35);}
+    .rate-row::after{content:'';position:absolute;top:0;right:0;width:80px;height:80px;
+      background:radial-gradient(circle at top right,rgba(201,168,76,.08),transparent 70%);}
+    .rate-flag-sm{font-size:2rem;width:auto;margin-bottom:4px;}
+    .rate-info{flex:none;width:100%;}
+    .rate-code{font-size:.9rem;}
+    .rate-right{text-align:left;margin-top:6px;}
+    .rate-val{font-size:1.9rem;}
+  }
+
+  .converter-box{background:rgba(17,34,64,.8);border:1px solid rgba(201,168,76,.18);border-radius:20px;padding:26px 22px;max-width:540px;}
+  .conv-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .conv-swap-row{display:flex;justify-content:center;margin:12px 0;}
+  .conv-field label{font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:7px;}
+  .conv-field input,.conv-field select{width:100%;padding:12px 14px;background:rgba(10,22,40,.7);
+    border:1px solid rgba(201,168,76,.2);border-radius:10px;color:var(--text-light);
+    font-family:'Mulish',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s;}
+  .conv-field input:focus,.conv-field select:focus{border-color:var(--gold);}
+  .conv-field select option{background:var(--navy-mid);}
+  .swap-btn{padding:10px 20px;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.25);
+    border-radius:10px;cursor:pointer;color:var(--gold);font-size:.9rem;transition:all .2s;font-family:'Mulish',sans-serif;}
+  .swap-btn:hover{background:rgba(201,168,76,.22);}
+  .conv-result{margin-top:20px;padding:18px;background:rgba(10,22,40,.6);
+    border-radius:12px;border:1px solid rgba(201,168,76,.12);text-align:center;}
+  .conv-result-label{font-size:.72rem;color:var(--text-muted);margin-bottom:5px;}
+  .conv-result-value{font-family:'Playfair Display',serif;font-size:2rem;color:var(--gold-light);font-weight:700;}
+
+  .info-grid{display:grid;grid-template-columns:1fr;gap:16px;}
+  @media(min-width:600px){.info-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr));}}
+  .info-card{background:rgba(17,34,64,.8);border:1px solid rgba(201,168,76,.14);border-radius:18px;padding:26px;animation:fadeUp .7s ease both;}
+  .info-card-icon{font-size:2rem;margin-bottom:12px;}
+  .info-card h3{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--gold-light);margin-bottom:12px;}
+  .info-row{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);gap:8px;}
+  .info-row:last-child{border-bottom:none;}
+  .info-label{font-size:.78rem;color:var(--text-muted);flex-shrink:0;}
+  .info-val{font-size:.82rem;color:var(--text-light);font-weight:500;text-align:right;}
+  .license-badge{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;
+    background:linear-gradient(135deg,rgba(46,204,113,.12),rgba(46,204,113,.05));
+    border:1px solid rgba(46,204,113,.3);border-radius:10px;margin-top:12px;font-size:.78rem;color:#2ecc71;}
+
+  .contacts-grid{display:grid;grid-template-columns:1fr;gap:16px;}
+  @media(min-width:560px){.contacts-grid{grid-template-columns:1fr 1fr;}}
+  .contact-card{background:rgba(17,34,64,.8);border:1px solid rgba(201,168,76,.18);border-radius:18px;padding:26px;
+    display:flex;flex-direction:column;gap:14px;animation:fadeUp .6s ease both;}
+  .contact-role{font-size:.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:4px;}
+  .contact-name{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--text-light);line-height:1.35;}
+  .contact-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--gold-dim),var(--navy-light));
+    display:flex;align-items:center;justify-content:center;font-size:1.5rem;border:2px solid rgba(201,168,76,.3);flex-shrink:0;}
+  .contact-top{display:flex;align-items:center;gap:14px;}
+  .contact-info{flex:1;}
+  .wa-btn{display:inline-flex;align-items:center;gap:9px;padding:13px 18px;
+    background:linear-gradient(135deg,#25D366,#128C7E);border-radius:12px;text-decoration:none;
+    color:#fff;font-size:.84rem;font-weight:600;transition:transform .2s,box-shadow .2s;
+    box-shadow:0 4px 16px rgba(37,211,102,.25);width:100%;justify-content:center;}
+  .wa-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,211,102,.35);}
+  .call-btn{display:inline-flex;align-items:center;gap:9px;padding:11px 18px;
+    background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);border-radius:12px;
+    text-decoration:none;color:var(--gold);font-size:.84rem;font-weight:600;transition:all .2s;
+    width:100%;justify-content:center;margin-top:6px;}
+  .call-btn:hover{background:rgba(201,168,76,.2);}
+  .no-wa-badge{display:inline-flex;align-items:center;gap:8px;padding:13px 16px;
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;
+    font-size:.78rem;color:var(--text-muted);width:100%;justify-content:center;}
+
+  .map-card{background:rgba(17,34,64,.8);border:1px solid rgba(201,168,76,.14);border-radius:18px;overflow:hidden;}
+  .map-card iframe{width:100%;height:200px;border:none;filter:brightness(.85) saturate(.8);}
+  .map-card-body{padding:18px;}
+  .map-card-body h3{font-family:'Playfair Display',serif;font-size:1rem;color:var(--gold-light);margin-bottom:8px;}
+  .map-card-body p{font-size:.8rem;color:var(--text-muted);line-height:1.6;}
+  .border-badge{display:flex;align-items:center;gap:10px;padding:12px 16px;margin-top:12px;
+    background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);
+    border-radius:10px;font-size:.8rem;color:var(--text-light);}
+  footer{position:relative;z-index:1;text-align:center;padding:36px 5vw;
+    border-top:1px solid rgba(201,168,76,.1);color:var(--text-muted);font-size:.75rem;line-height:1.8;}
+  footer span{color:var(--gold-dim);}
+  .error-msg{text-align:center;padding:30px;color:var(--text-muted);font-size:.88rem;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon">💱</div>
+    <div>
+      <div class="logo-text">Усман Валюта</div>
+      <div class="logo-sub">Обменный пункт</div>
+    </div>
+  </div>
+  <div class="nav-time">
+    <div class="dot-live"></div>
+    <span id="live-clock">--:--:--</span>
+    <span class="nav-right-text">&nbsp;· Курсы в реальном времени</span>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">🇰🇬 Официальный обменный пункт · Джалал-Абад</div>
+  <h1>Усман Валюта</h1>
+  <p>Выгодный обмен валют на границе Кыргызстан — Узбекистан. КПП Бек-Абад, Манас район, Джалал-Абад.</p>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">2022</div><div class="stat-label">Год основания</div></div>
+    <div class="stat"><div class="stat-num">10+</div><div class="stat-label">Валют</div></div>
+    <div class="stat"><div class="stat-num">24/7</div><div class="stat-label">Курсы онлайн</div></div>
+    <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Официально</div></div>
+  </div>
+</div>
+
+<div class="page-tabs" id="page-tabs">
+  <button class="page-tab active" data-page="rates">💹 Курсы</button>
+  <button class="page-tab" data-page="converter">🔄 Конвертер</button>
+  <button class="page-tab" data-page="contacts">📞 Контакты</button>
+  <button class="page-tab" data-page="about">🏢 О нас</button>
+</div>
+
+<!-- RATES PAGE -->
+<div class="page active" id="page-rates">
+  <div class="section">
+    <div class="rates-top">
+      <div>
+        <div class="section-title">Курсы валют</div>
+        <div class="section-line"></div>
+      </div>
+      <div class="update-info">
+        <div class="spinner" id="spinner"></div>
+        <span id="last-update">Загрузка...</span>
+      </div>
+    </div>
+    <div class="base-selector" id="base-selector">
+      <button class="base-btn active" data-base="USD">🇺🇸 USD</button>
+      <button class="base-btn" data-base="KGS">🇰🇬 KGS</button>
+      <button class="base-btn" data-base="UZS">🇺🇿 UZS</button>
+      <button class="base-btn" data-base="EUR">🇪🇺 EUR</button>
+      <button class="base-btn" data-base="RUB">🇷🇺 RUB</button>
+    </div>
+    <div class="rates-list" id="rates-grid">
+      <div class="error-msg">⏳ Загрузка курсов...</div>
+    </div>
+  </div>
+</div>
+
+<!-- CONVERTER PAGE -->
+<div class="page" id="page-converter">
+  <div class="section">
+    <div class="section-title">Конвертер валют</div>
+    <div class="section-line"></div>
+    <div class="converter-box">
+      <div class="conv-field" style="margin-bottom:14px;">
+        <label>Сумма</label>
+        <input type="number" id="conv-amount" value="100" min="0" step="any">
+      </div>
+      <div class="conv-row">
+        <div class="conv-field">
+          <label>Из</label>
+          <select id="conv-from"></select>
+        </div>
+        <div class="conv-field">
+          <label>В</label>
+          <select id="conv-to"></select>
+        </div>
+      </div>
+      <div class="conv-swap-row">
+        <button class="swap-btn" id="swap-btn">⇄ Поменять валюты</button>
+      </div>
+      <div class="conv-result">
+        <div class="conv-result-label">Результат конвертации</div>
+        <div class="conv-result-value" id="conv-result">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACTS PAGE -->
+<div class="page" id="page-contacts">
+  <div class="section">
+    <div class="section-title">Контакты</div>
+    <div class="section-line"></div>
+    <div class="contacts-grid">
+      <div class="contact-card">
+        <div class="contact-top">
+          <div class="contact-avatar">👔</div>
+          <div class="contact-info">
+            <div class="contact-role">Директор</div>
+            <div class="contact-name">Ахмаджанов<br>Мухаммат Мансурович</div>
+          </div>
+        </div>
+        <a class="wa-btn" href="https://wa.me/996559750058" target="_blank">
+          📲 WhatsApp: +996 559 750 058
+        </a>
+        <a class="call-btn" href="tel:+996559750058">📞 Позвонить</a>
+      </div>
+      <div class="contact-card">
+        <div class="contact-top">
+          <div class="contact-avatar">💼</div>
+          <div class="contact-info">
+            <div class="contact-role">Кассир</div>
+            <div class="contact-name">Ахматжанов<br>Абубакир Мансурович</div>
+          </div>
+        </div>
+        <div class="no-wa-badge">💬 Связь через директора</div>
+      </div>
+    </div>
+    <div style="margin-top:24px;">
+      <div class="info-card">
+        <div class="info-card-icon">📍</div>
+        <h3>Адрес и режим работы</h3>
+        <div class="info-row"><span class="info-label">Адрес</span><span class="info-val">КПП Бек-Абад, Манас р-н, Джалал-Абад</span></div>
+        <div class="info-row"><span class="info-label">Страна</span><span class="info-val">🇰🇬 Кыргызстан</span></div>
+        <div class="info-row"><span class="info-label">Режим работы</span><span class="info-val">Ежедневно 08:00 – 20:00</span></div>
+        <div class="info-row"><span class="info-label">Граница</span><span class="info-val">🇰🇬 ⇄ 🇺🇿 КР — Узбекистан</span></div>
+      </div>
+    </div>
+    <div class="map-card" style="margin-top:16px;">
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d24000!2d71.7!3d40.5!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDMwJzAwLjAiTiA3McKwNDInMDAuMCJF!5e0!3m2!1sru!2skg!4v1234567890"
+        allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      <div class="map-card-body">
+        <h3>КПП Бек-Абад</h3>
+        <p>Манас район, Джалал-Абад область, Кыргызская Республика</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT PAGE -->
+<div class="page" id="page-about">
+  <div class="section">
+    <div class="section-title">О компании</div>
+    <div class="section-line"></div>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-card-icon">🏦</div>
+        <h3>Усман Валюта</h3>
+        <div class="info-row"><span class="info-label">Работаем с</span><span class="info-val">2022 года</span></div>
+        <div class="info-row"><span class="info-label">Тип</span><span class="info-val">Официальный обменник</span></div>
+        <div class="info-row"><span class="info-label">Специализация</span><span class="info-val">KGS · UZS · USD · RUB</span></div>
+        <div class="info-row"><span class="info-label">Статус</span><span class="info-val">Действующий</span></div>
+        <div class="license-badge">✅ Все юридические разрешения получены</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-icon">📍</div>
+        <h3>Местоположение</h3>
+        <div class="info-row"><span class="info-label">Страна</span><span class="info-val">🇰🇬 Кыргызстан</span></div>
+        <div class="info-row"><span class="info-label">Город</span><span class="info-val">Джалал-Абад</span></div>
+        <div class="info-row"><span class="info-label">Район</span><span class="info-val">Манас район</span></div>
+        <div class="info-row"><span class="info-label">КПП</span><span class="info-val">Бек-Абад</span></div>
+        <div class="info-row"><span class="info-label">Режим</span><span class="info-val">Ежедневно 08:00–20:00</span></div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-icon">🛂</div>
+        <h3>Пограничный пункт</h3>
+        <div class="info-row"><span class="info-label">КПП</span><span class="info-val">Бек-Абад</span></div>
+        <div class="info-row"><span class="info-label">Граница</span><span class="info-val">КР — Узбекистан</span></div>
+        <div class="info-row"><span class="info-label">Со стороны КР</span><span class="info-val">🇰🇬 Обслуживаем</span></div>
+        <div class="info-row"><span class="info-label">Со стороны УЗ</span><span class="info-val">🇺🇿 Обслуживаем</span></div>
+        <div class="border-badge">
+          <span>🇰🇬</span><span>Кыргызстан</span>
+          <span style="color:var(--gold)">⇄</span>
+          <span>🇺🇿</span><span>Узбекистан</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div style="font-size:1.4rem;margin-bottom:8px">💱</div>
+  <div style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--gold-light);margin-bottom:6px">Усман Валюта</div>
+  <div>КПП Бек-Абад · Манас район · Джалал-Абад · Кыргызская Республика</div>
+  <div style="margin-top:5px">Работаем с 2022 года · Все юридические разрешения получены</div>
+  <div style="margin-top:5px">🇰🇬 Обмен валют на границе Кыргызстан — Узбекистан 🇺🇿</div>
+  <div style="margin-top:10px;font-size:.68rem;color:var(--text-muted)">Курсы носят информационный характер. Точный курс уточняйте у оператора.</div>
+</footer>
+
+<script>
+const REFRESH_MS=60000;
+let currentBase='USD';
+let ratesData={};
+let prevRates={};
+
+const CURRENCIES=[
+  {code:'KGS',flag:'🇰🇬',name:'Кыргызский сом'},
+  {code:'UZS',flag:'🇺🇿',name:'Узбекский сум'},
+  {code:'USD',flag:'🇺🇸',name:'Доллар США'},
+  {code:'EUR',flag:'🇪🇺',name:'Евро'},
+  {code:'RUB',flag:'🇷🇺',name:'Российский рубль'},
+  {code:'CNY',flag:'🇨🇳',name:'Китайский юань'},
+  {code:'KZT',flag:'🇰🇿',name:'Казахстанский тенге'},
+  {code:'TRY',flag:'🇹🇷',name:'Турецкая лира'},
+  {code:'GBP',flag:'🇬🇧',name:'Британский фунт'},
+  {code:'AED',flag:'🇦🇪',name:'Дирхам ОАЭ'},
+];
+const codeMap=Object.fromEntries(CURRENCIES.map(c=>[c.code,c]));
+
+document.getElementById('page-tabs').addEventListener('click',e=>{
+  const btn=e.target.closest('.page-tab');if(!btn)return;
+  document.querySelectorAll('.page-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('page-'+btn.dataset.page).classList.add('active');
+});
+
+function updateClock(){document.getElementById('live-clock').textContent=new Date().toLocaleTimeString('ru-RU',{hour12:false});}
+updateClock();setInterval(updateClock,1000);
+
+async function fetchRates(base=currentBase){
+  document.getElementById('spinner').classList.add('active');
+  try{
+    const res=await fetch(`/api/rates/?base=${base}`);
+    if(!res.ok)throw new Error();
+    const data=await res.json();
+    prevRates={...ratesData};
+    ratesData=data.rates;
+    ratesData[base]=1;
+    renderRates();renderConverter();
+    document.getElementById('last-update').textContent=
+      'Обновлено: '+new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  }catch(e){
+    document.getElementById('last-update').textContent='⚠ Ошибка загрузки';
+  }finally{
+    document.getElementById('spinner').classList.remove('active');
+  }
+}
+
+function formatRate(n){return n>=1000?n.toFixed(2):n>=10?n.toFixed(3):n.toFixed(4);}
+
+function renderRates(){
+  const grid=document.getElementById('rates-grid');
+  const displayed=CURRENCIES.filter(c=>c.code!==currentBase);
+  grid.innerHTML=displayed.map((cur,i)=>{
+    const rate=ratesData[cur.code];if(!rate)return'';
+    const prev=prevRates[cur.code];
+    let changeSm='';
+    if(prev&&prev!==rate){
+      const pct=((rate-prev)/prev*100).toFixed(4);
+      const up=rate>prev;
+      changeSm=`<div class="rate-change-sm ${up?'change-up':'change-down'}">${up?'▲':'▼'} ${Math.abs(pct)}%</div>`;
+    }
+    return `<div class="rate-row" style="animation-delay:${i*0.04}s">
+      <div class="rate-flag-sm">${cur.flag}</div>
+      <div class="rate-info">
+        <div class="rate-code">${cur.code}</div>
+        <div class="rate-name-sm">${cur.name}</div>
+      </div>
+      <div class="rate-right">
+        <div class="rate-val">${formatRate(rate)}</div>
+        <div class="rate-pair-sm">1 ${currentBase} / ${cur.code}</div>
+        ${changeSm}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function populateSelects(){
+  const opts=CURRENCIES.map(c=>`<option value="${c.code}">${c.flag} ${c.code} — ${c.name}</option>`).join('');
+  document.getElementById('conv-from').innerHTML=opts;
+  document.getElementById('conv-to').innerHTML=opts;
+  document.getElementById('conv-from').value='KGS';
+  document.getElementById('conv-to').value='UZS';
+}
+
+function renderConverter(){
+  const amount=parseFloat(document.getElementById('conv-amount').value)||0;
+  const from=document.getElementById('conv-from').value;
+  const to=document.getElementById('conv-to').value;
+  const rateFrom=ratesData[from]||1;
+  const rateTo=ratesData[to]||1;
+  let result;
+  if(from===currentBase)result=amount*rateTo;
+  else if(to===currentBase)result=amount/rateFrom;
+  else result=amount*(rateTo/rateFrom);
+  const toCur=codeMap[to]||{flag:'',code:to};
+  document.getElementById('conv-result').textContent=
+    `${toCur.flag} ${result.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:4})} ${to}`;
+}
+
+populateSelects();
+document.getElementById('conv-amount').addEventListener('input',renderConverter);
+document.getElementById('conv-from').addEventListener('change',renderConverter);
+document.getElementById('conv-to').addEventListener('change',renderConverter);
+document.getElementById('swap-btn').addEventListener('click',()=>{
+  const f=document.getElementById('conv-from'),t=document.getElementById('conv-to');
+  [f.value,t.value]=[t.value,f.value];renderConverter();
+});
+document.getElementById('base-selector').addEventListener('click',e=>{
+  const btn=e.target.closest('.base-btn');if(!btn)return;
+  document.querySelectorAll('.base-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');currentBase=btn.dataset.base;fetchRates(currentBase);
+});
+
+fetchRates();
+setInterval(()=>fetchRates(currentBase),REFRESH_MS);
+</script>
+</body>
+</html>
